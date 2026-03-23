@@ -1,41 +1,97 @@
 package com.example.task_manager.service;
 
+import com.example.task_manager.dto.CreateTaskRequest;
+import com.example.task_manager.entity.Project;
 import com.example.task_manager.entity.Task;
 import com.example.task_manager.entity.User;
-import com.example.task_manager.exception.AppException;
 import com.example.task_manager.enums.TaskStatus;
+import com.example.task_manager.exception.AppException;
+import com.example.task_manager.repository.ProjectRepository;
+import com.example.task_manager.repository.TaskRepository;
+import com.example.task_manager.repository.UserRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class TaskService {
-    private List<Task> tasks = new ArrayList<>();
 
-    public void addTask(Task task) {
-        if (task == null) {
-            throw new AppException("Task null");
+    private final TaskRepository taskRepository;
+    private final ProjectRepository projectRepository;
+    private final UserRepository userRepository;
+
+    public TaskService(TaskRepository taskRepository,
+                       ProjectRepository projectRepository,
+                       UserRepository userRepository) {
+        this.taskRepository = taskRepository;
+        this.projectRepository = projectRepository;
+        this.userRepository = userRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Task> getTasksByUser(Long userId) {
+        return taskRepository.findByUserId(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Task> getTasksByProject(Long projectId) {
+        return taskRepository.findByProjectId(projectId);
+    }
+
+    @Transactional
+    public Task createTask(CreateTaskRequest request) {
+        Project project = projectRepository.findById(request.getProjectId())
+                .orElseThrow(() -> new AppException("Project not found"));
+
+        Task task = new Task();
+        task.setTitle(request.getTitle());
+        task.setDescription(request.getDescription());
+        task.setStatus(TaskStatus.TODO);
+        task.setProject(project);
+        return taskRepository.save(task);
+    }
+
+    @Transactional
+    public Task assignTask(Long taskId, Long userId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new AppException("Task not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException("User not found"));
+
+        Project project = task.getProject();
+        if (project == null) {
+            throw new AppException("Task has no project");
         }
-        tasks.add(task);
+
+        // Business rule: only members of the project can be assigned
+        boolean belongsToProject = project.getUsers()
+                .stream()
+                .anyMatch(u -> u.getId().equals(user.getId()));
+        if (!belongsToProject) {
+            throw new AppException("User does not belong to project's members");
+        }
+
+        task.setUser(user);
+        return taskRepository.save(task);
     }
 
-    public void deleteTask(Long id) {
-        tasks.removeIf(t -> t.getId().equals(id));
-    }
+    @Transactional
+    public Task updateStatus(Long taskId, TaskStatus newStatus) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new AppException("Task not found"));
 
-    public Task findById(Long id) {
-        return tasks.stream()
-                .filter(t -> t.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new AppException("Không tìm thấy task"));
-    }
+        // Business rule: do not allow updates when DONE
+        if (task.getStatus() == TaskStatus.DONE) {
+            throw new AppException("Task is DONE and cannot be updated");
+        }
 
-    public void updateStatus(Long id, TaskStatus status) {
-        Task task = findById(id);
-        task.updateStatus(status);
-    }
+        // Business rule: optional - do not allow TODO -> DONE directly
+        if (task.getStatus() == TaskStatus.TODO && newStatus == TaskStatus.DONE) {
+            throw new AppException("Cannot move directly from TODO to DONE");
+        }
 
-    public void assignTask(Long taskId, User user) {
-        Task task = findById(taskId);
-        task.assignUser(user);
+        task.setStatus(newStatus);
+        return taskRepository.save(task);
     }
 }

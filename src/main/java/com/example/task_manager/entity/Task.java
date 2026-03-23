@@ -1,47 +1,38 @@
 package com.example.task_manager.entity;
 
 import com.example.task_manager.enums.TaskStatus;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.time.LocalDate;
-
+@Entity
+@Table(name = "tasks")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Task {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
     private String title;
-    private TaskStatus status;
-    private LocalDate deadline;
+
+    private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TaskStatus status = TaskStatus.TODO;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
     private Project project;
-
-    public Task(Long id, String title, LocalDate deadline, Project project) {
-        if (title == null || title.isBlank()) {
-            throw new IllegalArgumentException("Title không được rỗng");
-        }
-        if (deadline.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Deadline phải lớn hơn hiện tại");
-        }
-
-        this.id = id;
-        this.title = title;
-        this.deadline = deadline;
-        this.project = project;
-        this.status = TaskStatus.TODO;
-    }
-
-    public void assignUser(User user) {
-        if (!project.hasUser(user)) {
-            throw new RuntimeException("User không thuộc project");
-        }
-        this.user = user;
-    }
-
-    public void updateStatus(TaskStatus status) {
-        if (this.status == TaskStatus.DONE) {
-            throw new RuntimeException("Task đã DONE không update");
-        }
-        this.status = status;
-    }
-
-    public Long getId() {
-        return id;
-    }
 }

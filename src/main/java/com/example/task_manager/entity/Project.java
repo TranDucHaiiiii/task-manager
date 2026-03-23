@@ -1,35 +1,42 @@
 package com.example.task_manager.entity;
 
-import com.example.task_manager.exception.AppException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Table(name = "projects")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Project {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
     private String name;
+
     private String description;
+
+    @JsonIgnore
+    @ManyToMany
+    @JoinTable(
+            name = "project_users",
+            joinColumns = @JoinColumn(name = "project_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
     private List<User> users = new ArrayList<>();
 
-    public Project(Long id, String name, String description) {
-        if (name == null || name.isBlank()) {
-            throw new AppException("Tên project không được rỗng");
-        }
-        this.id = id;
-        this.name = name;
-        this.description = description;
-    }
-
-    public void addUser(User user) {
-        users.add(user);
-    }
-
-    public boolean hasUser(User user) {
-        return users.contains(user);
-    }
-
-    public Long getId() {
-        return id;
-    }
+    @JsonIgnore
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Task> tasks = new ArrayList<>();
 }
-
