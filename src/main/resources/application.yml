@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: Task_manager
+  profiles:
+    active: dev
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+app:
+  jwt:
+    secret: change-me-please-change-me-please-32bytes
+    expiration-ms: 86400000

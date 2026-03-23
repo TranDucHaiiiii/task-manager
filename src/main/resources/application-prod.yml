@@ -1,0 +1,8 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: jdbc:sqlserver://prod-db-host:1433;databaseName=TaskManagerProd;encrypt=true;trustServerCertificate=true
+    username: prod_user
+    password: prod_password

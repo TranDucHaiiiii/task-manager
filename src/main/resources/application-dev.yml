@@ -1,0 +1,8 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=TaskManagerDev;encrypt=true;trustServerCertificate=true
+    username: sa
+    password: 123456
