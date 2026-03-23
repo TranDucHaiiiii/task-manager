@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "tasks")
 @Getter
@@ -23,6 +25,9 @@ public class Task {
     private String title;
 
     private String description;
+
+    @Column(nullable = false)
+    private LocalDate deadline;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
