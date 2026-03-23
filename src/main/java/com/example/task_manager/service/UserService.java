@@ -1,7 +1,7 @@
 package com.example.task_manager.service;
 
 import com.example.task_manager.entity.User;
-import com.example.task_manager.exception.AppException;
+import com.example.task_manager.exception.BadRequestException;
 import com.example.task_manager.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -22,11 +22,11 @@ public class UserService {
 
     public User create(User user) {
         if (user.getUsername() == null || user.getUsername().isBlank()) {
-            throw new AppException("Username không được để trống");
+            throw new BadRequestException("Username khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
         }
 
         if (userRepository.existsByUsername(user.getUsername())) {
-            throw new AppException("Username đã tồn tại");
+            throw new BadRequestException("Username Ä‘Ã£ tá»“n táº¡i");
         }
         return userRepository.save(user);
     }

@@ -41,6 +41,17 @@ public class TaskService {
         return taskRepository.findByProjectId(projectId);
     }
 
+    @Transactional(readOnly = true)
+    public List<Task> getTasksByProjectForUser(Long projectId, Long userId) {
+        return taskRepository.findByProjectIdAndUserId(projectId, userId);
+    }
+
+    @Transactional(readOnly = true)
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
     @Transactional
     public Task createTask(TaskRequest request) {
         Project project = projectRepository.findById(request.getProjectId())

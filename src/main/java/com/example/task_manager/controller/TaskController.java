@@ -4,9 +4,12 @@ import com.example.task_manager.dto.ApiResponse;
 import com.example.task_manager.dto.TaskRequest;
 import com.example.task_manager.dto.UpdateTaskStatusRequest;
 import com.example.task_manager.entity.Task;
+import com.example.task_manager.entity.User;
+import org.springframework.security.access.AccessDeniedException;
 import com.example.task_manager.service.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,14 +44,32 @@ public class TaskController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<ApiResponse<List<Task>>> getTasksByUser(@PathVariable Long userId) {
+    public ResponseEntity<ApiResponse<List<Task>>> getTasksByUser(@PathVariable Long userId,
+                                                                  Authentication authentication) {
+        User currentUser = taskService.getUserByUsername(authentication.getName());
+        if (!isManager(authentication) && !currentUser.getId().equals(userId)) {
+            throw new AccessDeniedException("Forbidden");
+        }
         List<Task> tasks = taskService.getTasksByUser(userId);
         return ResponseEntity.ok(new ApiResponse<>(200, "Success", tasks));
     }
 
     @GetMapping("/project/{projectId}")
-    public ResponseEntity<ApiResponse<List<Task>>> getTasksByProject(@PathVariable Long projectId) {
-        List<Task> tasks = taskService.getTasksByProject(projectId);
+    public ResponseEntity<ApiResponse<List<Task>>> getTasksByProject(@PathVariable Long projectId,
+                                                                     Authentication authentication) {
+        User currentUser = taskService.getUserByUsername(authentication.getName());
+        List<Task> tasks;
+        if (isManager(authentication)) {
+            tasks = taskService.getTasksByProject(projectId);
+        } else {
+            tasks = taskService.getTasksByProjectForUser(projectId, currentUser.getId());
+        }
         return ResponseEntity.ok(new ApiResponse<>(200, "Success", tasks));
+    }
+
+    private boolean isManager(Authentication authentication) {
+        return authentication.getAuthorities()
+                .stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_MANAGER"));
     }
 }
