@@ -105,3 +105,54 @@ If you see DB or port errors:
 
 ## Expected Result
 Anyone can clone, configure DB, run with a profile, and test via Swagger/Postman successfully.
+
+## Weekly Progress (Week 1 - 10)
+### Week 1
+- Entities: init project, base package structure.
+- API: health run, initial controller skeleton.
+- Notes: verified app boots with Maven.
+
+### Week 2
+- Entities: User/Project/Task models and basic fields.
+- Database: SQL Server connection + JPA config.
+- Notes: created initial tables via Hibernate.
+
+### Week 3
+- API: User CRUD (create, list).
+- Service: input validation + duplicate check.
+- Exception: GlobalExceptionHandler (basic).
+
+### Week 4
+- Entities: mapping User-Task, Project-Task.
+- API: list tasks by user/project.
+- Notes: fixed JSON infinite loop handling.
+
+### Week 5
+- Service: assign task, update status, business rules.
+- Rules: DONE không update, TODO -> DONE bị chặn.
+- Notes: chuẩn hóa logic trong service layer.
+
+### Week 6
+- Validation: @NotBlank, @Size, deadline > current date.
+- Response: ApiResponse chuẩn hóa output.
+- Exception: BadRequest/NotFound + map lỗi theo field.
+
+### Week 7
+- Auth: JWT login/register.
+- Security: filter + SecurityConfig + role USER/MANAGER.
+- Authorization: MANAGER tạo project, USER xem task của mình.
+
+### Week 8
+- Test: unit test TaskService với JUnit5 + Mockito.
+- Coverage: createTask, assignTask, updateStatus (success/fail).
+- Notes: dùng ArgumentCaptor verify dữ liệu save.
+
+### Week 9
+- Swagger: springdoc-openapi + @Operation/@Tag.
+- Deploy: profile dev/prod, run jar, config check.
+- Docs: README cập nhật hướng dẫn.
+
+### Week 10
+- Demo: script chi tiết + checklist.
+- Q&A: JPA, JWT, phân quyền.
+- Final: review bug nhỏ + chuẩn bị nộp.
